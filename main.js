@@ -86,36 +86,38 @@ document.addEventListener('DOMContentLoaded', () => {
     resize();
     window.addEventListener('resize', resize);
 
-    const COLORS = ['rgba(155,127,244,0.5)', 'rgba(124,58,237,0.4)', 'rgba(196,176,255,0.35)', 'rgba(34,212,114,0.25)'];
+    const COLORS = ['rgba(155,127,244,0.7)', 'rgba(124,58,237,0.6)', 'rgba(196,176,255,0.55)', 'rgba(34,212,114,0.4)', 'rgba(167,139,250,0.6)'];
 
     class Particle {
       constructor() { this.reset(true); }
       reset(init = false) {
         this.x = Math.random() * W;
-        this.y = init ? Math.random() * H : -10;
-        this.r = Math.random() * 1.4 + 0.3;
-        this.vx = (Math.random() - 0.5) * 0.25;
-        this.vy = Math.random() * 0.35 + 0.1;
-        this.alpha = Math.random() * 0.6 + 0.1;
+        // spawn from top OR bottom randomly
+        this.fromBottom = Math.random() > 0.5;
+        if (init) {
+          this.y = Math.random() * H;
+        } else {
+          this.y = this.fromBottom ? H + 10 : -10;
+        }
+        this.r = Math.random() * 2 + 0.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        // move upward if from bottom, downward if from top
+        this.vy = this.fromBottom
+          ? -(Math.random() * 0.5 + 0.15)
+          :  (Math.random() * 0.5 + 0.15);
+        this.alpha = Math.random() * 0.7 + 0.2;
         this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
         this.life = 0;
-        this.maxLife = Math.random() * 400 + 200;
+        this.maxLife = Math.random() * 500 + 250;
       }
       update() {
         this.x += this.vx;
         this.y += this.vy;
-        
-        // Subtle parallax effect tracking the mouse
-        const dx = mouseX - W / 2;
-        const dy = mouseY - H / 2;
-        this.x -= dx * 0.0005 * this.r;
-        this.y -= dy * 0.0005 * this.r;
-
         this.life++;
-        if (this.life > this.maxLife || this.y > H + 10 || this.x < -10 || this.x > W + 10) this.reset();
+        if (this.life > this.maxLife || this.y > H + 10 || this.y < -10 || this.x < -10 || this.x > W + 10) this.reset();
       }
       draw() {
-        const fade = Math.min(this.life / 60, 1) * Math.min((this.maxLife - this.life) / 60, 1);
+        const fade = Math.min(this.life / 80, 1) * Math.min((this.maxLife - this.life) / 80, 1);
         ctx.globalAlpha = this.alpha * fade;
         ctx.fillStyle = this.color;
         ctx.beginPath();
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Create particles
-    const numParticles = window.innerWidth < 768 ? 60 : 200;
+    const numParticles = window.innerWidth < 768 ? 150 : 500;
     for (let i = 0; i < numParticles; i++) particles.push(new Particle());
 
     let mouseX = W / 2, mouseY = H / 2;
